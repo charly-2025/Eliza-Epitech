@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="pizzaCommand"">
+        <input type="text" id="name" name="name" placeholder="Entrez votre nom" required/>
+        <input type="mail" id="email" name="email" placeholder="Entrez votre email" required/>
+
+        <input id="phone" type="tel" name="phone" placeholder="Entrez votre numéro de téléphone"/>
+
+        <button type="button" onclick="handleShowPizzas()">Choisir une pizza</button>
+        <div id="pizzaList">
+        <label><input type="checkbox" name="pizza" value="1"> Margherita</label><br>
+        <label><input type="checkbox" name="pizza" value="2"> Pepperoni</label><br>
+        <label><input type="checkbox" name="pizza" value="3"> 4 Fromages</label><br>
+        <label><input type="checkbox" name="pizza" value="4"> Hawaïenne</label><br>
+        </div>
+        <div id="autocomplete-container"></div>
+        <button type="submit">Submit</button>
+
+    </form>
+    <script src="js/main.js"></script>
+</body>
+<style>
+    #pizzaList {
+      display: none; /* caché au début */
+      margin-top: 10px;
+    }
+
+    form{
+        margin-top: 30px;
+        justify-self: center;
+        gap: 20px;
+        width: 30%;
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+</html>
