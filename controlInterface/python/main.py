@@ -101,7 +101,7 @@ def get_pizzas_name(list_pizzas_id,cursor):
     list_pizzas_name = []
     
     for pizza_id in list_pizzas_id : 
-        cursor.execute("SELECT name FROM pizzas WHERE id = %s",(pizza_id,))
+        cursor.execute("SELECT name FROM pizzas WHERE pizza_id = %s",(pizza_id,))
         list_pizzas_name.append(cursor.fetchone()[0])
     
     return list_pizzas_name
@@ -111,13 +111,18 @@ def get_pizzas_preparation(list_pizzas_id,cursor):
     pizzas_time_preparation = 0
     
     for pizza_id in list_pizzas_id : 
-        cursor.execute("SELECT preparation_time FROM pizzas WHERE id = %s",(pizza_id,))
+        cursor.execute("SELECT preparation_time FROM pizzas WHERE pizza_id = %s",(pizza_id,))
         pizzas_time_preparation += cursor.fetchone()[0]
     
     return pizzas_time_preparation
 
 def insert_new_pizza(cursor,pizza_name,preparation_time,price):
     cursor.execute("INSERT INTO pizzas (name,preparation_time,price) VALUES (%s,%s,%s)",(pizza_name,preparation_time,price,))
+
+
+def get_all_pizzas(cursor):
+    cursor.execute("SELECT * FROM pizzas")
+    return cursor.fetchall()
 
 
 @app.route("/timetravel", methods=["POST"])
@@ -161,12 +166,9 @@ def newCommand():
     con,cursor = create_link_db("pizza_db",os.getenv("PASSWORD"))
 
     preparation_time = get_pizzas_preparation(pizzas,cursor)
-    list_pizzas_name = get_pizzas_name(pizzas,cursor)
     delivery_time = get_delivery_time(Epitech,coords)+120
 
-
     now = datetime.now()
-
     date_finish_preparation = now + timedelta(minutes=preparation_time)
     date_delivery = date_finish_preparation + timedelta(seconds=delivery_time)
 
@@ -187,6 +189,12 @@ def newCommand():
         "result" : "succes"
     })
 
+@app.route("/get_pizzas", methods=["GET"])
+def get_pizzas():
+    conn, cursor = create_link_db("pizza_db",os.getenv("PASSWORD"))
+    pizzas = get_all_pizzas(cursor)
+    conn.close()
+    return pizzas
 
 if args.pizza :
     conn,link = create_link_db("pizza_db",os.getenv("PASSWORD"))
@@ -205,3 +213,7 @@ if args.pizza :
 
 if __name__ == "__main__" and args.back:
     app.run(debug=True)
+
+
+
+

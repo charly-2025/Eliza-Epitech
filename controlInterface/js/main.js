@@ -1,6 +1,39 @@
 let showPizzas = true
 let globalCoord = []
 
+
+function setPizzas() {
+  const pizzaList = document.getElementById("pizzaList")
+  fetch("http://127.0.0.1:5000/get_pizzas", {
+      method: "GET"})
+  .then(response => {
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    return response.json();
+  })
+  .then(data => {
+      pizzaList.replaceChildren();
+      data.forEach(pizza => {
+        const id = pizza[0];
+        const nom = pizza[1];
+        const temps = pizza[2];
+        const prix = pizza[3];
+
+        const label = document.createElement("label");
+
+        label.innerHTML = `
+          <input type="checkbox" name="pizza" value="${id}">
+          ${nom} (${prix}€)
+        `;
+
+        pizzaList.appendChild(label);
+        pizzaList.appendChild(document.createElement("br"));
+      })
+  })
+  .catch(error => console.error('Fetch error:', error)); 
+}
+
+setPizzas()
+
 function handleShowPizzas() {
   const list = document.getElementById("pizzaList");
   if (showPizzas) { 
