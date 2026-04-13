@@ -163,10 +163,23 @@ def newCommand():
     phone = data["phone"]
 
 
+    delivery_time_from_frontend = data.get("delivery_time_seconds", None)
+
+    print(f"[newCommand] coords reçus: {coords}")
+    print(f"[newCommand] delivery_time_from_frontend: {delivery_time_from_frontend}")
+
     con,cursor = create_link_db("pizza_db",os.getenv("PASSWORD"))
 
     preparation_time = get_pizzas_preparation(pizzas,cursor)
-    delivery_time = get_delivery_time(Epitech,coords)+120
+
+    if delivery_time_from_frontend and delivery_time_from_frontend > 0:
+        delivery_time = int(delivery_time_from_frontend)
+    else:
+        #recalcule seulement si les coords sont valides
+        if not coords or len(coords) < 2 or (coords[0] == 0 and coords[1] == 0):
+            con.close()
+            return jsonify({"result": "error", "message": "Coordonnées invalides"}), 400
+        delivery_time = get_delivery_time(Epitech, coords) + 120
 
     now = datetime.now()
     date_finish_preparation = now + timedelta(minutes=preparation_time)
