@@ -513,15 +513,13 @@ function addressAutocomplete(containerElement, callback, options) {
   containerElement.style.position = "relative";
 
   const inputElement = document.createElement("input");
-  inputElement.id = "addressInput"
-  inputElement.autocomplete = "off"
-  inputElement.name = "addressInput"
-  inputElement.required = true
+  inputElement.id = "addressInput";
+  inputElement.autocomplete = "off";
+  inputElement.name = "addressInput";
+  inputElement.required = true;
   inputElement.type = "text";
-  inputElement.placeholder = options.placeholder || "Enter address";
-  inputElement.style.width = "100%";
-  inputElement.style.padding = "10px";
-  inputElement.style.boxSizing = "border-box";
+  inputElement.placeholder = options.placeholder || "Entrez une adresse";
+  inputElement.className = "finp";
   containerElement.appendChild(inputElement);
 
   const suggestionsElement = document.createElement("div");
@@ -529,16 +527,22 @@ function addressAutocomplete(containerElement, callback, options) {
   suggestionsElement.style.top = "100%";
   suggestionsElement.style.left = "0";
   suggestionsElement.style.width = "100%";
-  suggestionsElement.style.border = "1px solid #ccc";
+  suggestionsElement.style.border = "1.5px solid var(--bd)";
   suggestionsElement.style.background = "#fff";
   suggestionsElement.style.zIndex = "1000";
   suggestionsElement.style.maxHeight = "200px";
   suggestionsElement.style.overflowY = "auto";
-  suggestionsElement.style.fontFamily = "Arial";
+  suggestionsElement.style.fontFamily = "var(--fb)";
+  suggestionsElement.style.fontSize = "13px";
+  suggestionsElement.style.borderRadius = "10px";
+  suggestionsElement.style.marginTop = "4px";
+  suggestionsElement.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
+  suggestionsElement.style.display = "none"; 
   containerElement.appendChild(suggestionsElement);
 
   function clearSuggestions() {
     suggestionsElement.innerHTML = "";
+    suggestionsElement.style.display = "none";
     currentItems = [];
     activeIndex = -1;
   }
@@ -585,6 +589,7 @@ function addressAutocomplete(containerElement, callback, options) {
 
           suggestionsElement.appendChild(item);
         });
+        suggestionsElement.style.display = "block";
       })
       .catch(err => console.error(err));
   }
