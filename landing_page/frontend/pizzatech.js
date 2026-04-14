@@ -212,9 +212,9 @@ function confirmOrder(){
   const inputs = document.querySelectorAll(".finp");
   const prenom  = inputs[0]?.value.trim() || "";
   const nom     = inputs[1]?.value.trim() || "";
-  const address = inputs[2]?.value.trim() || "";
-  const email   = inputs[3]?.value.trim() || "";
-  const phone   = inputs[4]?.value.trim() || "";
+  const address = document.querySelector("input[name='addressInput']").value;
+  const email   = document.querySelector("input[name='payment-email']").value;
+  const phone   = document.querySelector("input[name='payment-phone']").value;
 
   if(!prenom || !nom || !address || !email){
     alert("Veuillez remplir tous les champs obligatoires (prénom, nom, adresse, email).");
@@ -230,7 +230,7 @@ function confirmOrder(){
     const item = DATA.pizzas.find(p=>p.id===localId);
     if(!item) return;
     const dbId = parseInt(localId.replace("p",""), 10); // p3 → 3
-    for(let i=0;i<q;i++) pizzaIds.push(String(dbId));
+    for(let i=0;i<q;i++) pizzaIds.push((dbId));
   });
 
   const payload = {
@@ -248,6 +248,7 @@ function confirmOrder(){
   btn.textContent = "Envoi en cours...";
 
   console.log(payload)
+  console.log(_deliveryCoords)
 
   fetch(API + "/newcommand", {
     method  : "POST",
@@ -639,9 +640,9 @@ addressAutocomplete(
     const lat = selectedAddress.properties.lat;
     const lon = selectedAddress.properties.lon;
 
-    destinationCoords = [lon, lat]
-    globalCoord = [lon, lat]
-    console.log("Coords :", destinationCoords);
+    _deliveryCoords = [lon, lat]
+
+    console.log("Coords :", _deliveryCoords);
 
    fetch("http://127.0.0.1:5000/timetravel", {
   method: "POST",
@@ -649,7 +650,7 @@ addressAutocomplete(
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
-    destination: destinationCoords
+    destination: _deliveryCoords
   })
   })
   .then(res => res.json())
@@ -658,6 +659,7 @@ addressAutocomplete(
       alert("Livraison impossible, entrez une adresse valide");
 
       const input = document.getElementById("addressInput");
+      _deliveryCoords = []
       input.value = "";
       return;
     }

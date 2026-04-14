@@ -228,15 +228,15 @@ const IMAGES = {
 
           <div class="pay-label">Informations personnelles</div>
           <div class="frow">
-            <div class="fg"><label class="flbl">Prénom</label><input class="finp" type="text" placeholder="Jean"/></div>
-            <div class="fg"><label class="flbl">Nom</label><input class="finp" type="text" placeholder="Dupont"/></div>
+            <div class="fg"><label class="flbl">Prénom</label><input class="finp" type="text" placeholder="Jean" required/></div>
+            <div class="fg"><label class="flbl">Nom</label><input class="finp" type="text" placeholder="Dupont" required/></div>
           </div>
           <div class="frow full">
             <div class="fg"><label class="flbl">Adresse de livraison</label><div id="autocomplete-container"></div></div>
           </div>
           <div class="frow">
-            <div class="fg"><label class="flbl">Email</label><input class="finp" type="email" placeholder="jean@email.com"/></div>
-            <div class="fg"><label class="flbl">Téléphone</label><input class="finp" type="tel" placeholder="06 12 34 56 78"/></div>
+            <div class="fg"><label class="flbl">Email</label><input class="finp" name="payment-email" type="email" placeholder="jean@email.com" required/></div>
+            <div class="fg"><label class="flbl">Téléphone</label><input class="finp" type="tel" name="payment-phone" placeholder="06 12 34 56 78" required/></div>
           </div>
 
           <div class="pay-label">Paiement par carte</div>
