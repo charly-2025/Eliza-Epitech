@@ -1,3 +1,8 @@
+const API = "http://127.0.0.1:5000";
+
+let _deliveryCoords = [];
+let _deliverySeconds = 0; //temps livraison retourné par le back
+
 //dict of donner
 const DATA = {
   pizzas: [
@@ -54,11 +59,21 @@ function cartCount(){
 }
 
 function phSVG(type){
-  if(type==="pizza")return`<svg width="64" height="64" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#E8962A"/><circle cx="50" cy="50" r="36" fill="#CC1A1A"/><circle cx="50" cy="50" r="29" fill="#F5C542"/><circle cx="36" cy="42" r="5" fill="#CC1A1A"/><circle cx="58" cy="36" r="4" fill="#CC1A1A"/><circle cx="44" cy="57" r="5" fill="#CC1A1A"/><circle cx="61" cy="55" r="4" fill="#CC1A1A"/></svg>`;
-  if(type==="dessert")return`<svg width="54" height="54" viewBox="0 0 80 80" fill="none"><rect x="10" y="40" width="60" height="26" rx="8" fill="#8B4513"/><ellipse cx="40" cy="40" rx="30" ry="10" fill="#C0623A"/><ellipse cx="40" cy="30" rx="16" ry="9" fill="#F5C542"/></svg>`;
-  return`<svg width="40" height="54" viewBox="0 0 60 80" fill="none"><rect x="12" y="10" width="36" height="50" rx="7" fill="#1a5fa8"/><ellipse cx="30" cy="10" rx="18" ry="7" fill="#3a85d8"/><rect x="20" y="60" width="20" height="12" rx="4" fill="#0e3d70"/></svg>`;
+  return `
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#eee"/>
+      <text x="50%" y="55%" text-anchor="middle" font-size="8" fill="#666">${type}</text>
+    </svg>
+  `;
 }
-function chkSVG(){return`<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+function chkSVG(){
+  return `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" fill="#22c55e"/>
+      <path d="M7 12l3 3 7-7" stroke="white" stroke-width="2" fill="none"/>
+    </svg>
+  `;
+}
 
 function cardHTML(item,type){
   const typeKey=type==="pizzas"?"pizza":type==="desserts"?"dessert":"boisson";
@@ -173,6 +188,14 @@ function buildRecap(){
   DATA.boissons.forEach(p=>{const q=cart.boissons[p.id];if(q)lines.push({name:p.name,q,price:p.price})});
   document.getElementById("recapLines").innerHTML=lines.map(l=>`<div class="rline"><span>${l.q>1?l.q+"x ":""}${l.name}</span><span>${fmt(l.price*l.q)}</span></div>`).join("");
   document.getElementById("recapTotal").textContent=fmt(cartTotal());
+
+  //ID sur les inputs du step 4
+  const step4=document.querySelectorAll(".step-page")[3];
+  if(step4){
+    const inputs=step4.querySelectorAll(".finp");
+    const ids=["inp-prenom","inp-nom","inp-address","inp-email","inp-phone","inp-cardname","inp-cardnum","inp-cardexp","inp-cardcvv"];
+    inputs.forEach((inp,i)=>{if(ids[i]&&!inp.id)inp.id=ids[i]});
+  }
 }
 
 
@@ -184,25 +207,219 @@ function updateCartBar(){
   if(n>0)bar.classList.add("visible");else bar.classList.remove("visible");
 }
 
-//timer ramdom for livraison
 function confirmOrder(){
-  const mins=Math.floor(Math.random()*11)+15;
-  timerSecs=mins*60;timerTotal=timerSecs;
-  document.getElementById("modalForm").style.display="none";
-  const sc=document.getElementById("confirmScreen");
-  sc.classList.add("show");
-  document.getElementById("delivMins").textContent=mins;
-  tick();
-  if(timerIv)clearInterval(timerIv);
-  timerIv=setInterval(()=>{timerSecs--;tick();if(timerSecs<=0){clearInterval(timerIv);document.getElementById("timerDig").textContent="Livré !";document.getElementById("timerTxt").textContent="Votre commande est arrivée. Bon appétit !"}},1000);
-  cart.pizzas={};cart.desserts={};cart.boissons={};
-  updateCartBar();
+  //récupère les champs du formulaire de paiement
+  const inputs = document.querySelectorAll(".finp");
+  const prenom  = inputs[0]?.value.trim() || "";
+  const nom     = inputs[1]?.value.trim() || "";
+  const address = inputs[2]?.value.trim() || "";
+  const email   = inputs[3]?.value.trim() || "";
+  const phone   = inputs[4]?.value.trim() || "";
+
+  if(!prenom || !nom || !address || !email){
+    alert("Veuillez remplir tous les champs obligatoires (prénom, nom, adresse, email).");
+    return;
+  }
+
+  //collecte les pizza_id réels (numérique) depuis DATA
+  //le back attend des ids de la table pizzas (entiers)
+  //on mappe nos ids locaux (p1..p9) vers les vrais ids DB
+  //en utilisant l'index dans DATA.pizzas (p1 = index 0 -> db_id 1)
+  const pizzaIds = [];
+  Object.entries(cart.pizzas).forEach(([localId, q])=>{
+    const item = DATA.pizzas.find(p=>p.id===localId);
+    if(!item) return;
+    const dbId = parseInt(localId.replace("p",""), 10); // p3 → 3
+    for(let i=0;i<q;i++) pizzaIds.push(String(dbId));
+  });
+
+  const payload = {
+    name    : prenom + " " + nom,
+    email   : email,
+    phone   : phone,
+    address : address,
+    pizzas  : pizzaIds,
+    coords  : _deliveryCoords.length ? _deliveryCoords : [0, 0]
+  };
+
+  //désactive le bouton pendant l'envoi
+  const btn = document.getElementById("btnNext");
+  btn.disabled = true;
+  btn.textContent = "Envoi en cours...";
+
+  fetch(API + "/newcommand", {
+    method  : "POST",
+    headers : {"Content-Type":"application/json"},
+    body    : JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.result !== "succes"){
+      alert("Erreur lors de la commande. Veuillez réessayer.");
+      btn.disabled = false;
+      btn.textContent = "Confirmer et payer";
+      return;
+    }
+    //lance le timer avec le vrai temps livraison du back
+    //_deliverySeconds rempli lors de la validation d'adresse
+    const delivSecs = _deliverySeconds > 0 ? _deliverySeconds : (Math.floor(Math.random()*11)+15)*60;
+    const delivMins = Math.round(delivSecs / 60);
+
+    timerSecs  = delivSecs;
+    timerTotal = delivSecs;
+
+    document.getElementById("modalForm").style.display="none";
+    const sc=document.getElementById("confirmScreen");
+    sc.classList.add("show");
+    document.getElementById("delivMins").textContent = delivMins;
+    tick();
+    if(timerIv) clearInterval(timerIv);
+    timerIv = setInterval(()=>{
+      timerSecs--;
+      tick();
+      if(timerSecs<=0){
+        clearInterval(timerIv);
+        document.getElementById("timerDig").textContent="Livré !";
+        document.getElementById("timerTxt").textContent="Votre commande est arrivée. Bon appétit !";
+      }
+    }, 1000);
+
+    cart.pizzas={};cart.desserts={};cart.boissons={};
+    _deliveryCoords=[];_deliverySeconds=0;
+    updateCartBar();
+  })
+  .catch(err=>{
+    console.error(err);
+    alert("Impossible de joindre le serveur. Vérifiez que le backend Flask est lancé.");
+    btn.disabled = false;
+    btn.textContent = "Confirmer et payer";
+  });
 }
+
 function tick(){
   const m=Math.floor(timerSecs/60),s=timerSecs%60;
   document.getElementById("timerDig").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
   const pct=(timerSecs/timerTotal)*100;
   document.getElementById("timerBarIn").style.width=pct+"%";
+}
+//auto complete l'address
+function initAddressAutocomplete(){
+  const container = document.getElementById("addressAutocomplete");
+  if(!container) return;
+
+  let debounce, currentItems=[], activeIndex=-1;
+  container.style.position="relative";
+
+  const inp = document.createElement("input");
+  inp.type="text"; inp.id="addressInput"; inp.name="address";
+  inp.required=true; inp.autocomplete="off";
+  inp.placeholder="Votre adresse de livraison...";
+  inp.className="finp";
+  inp.style.width="100%";
+  container.appendChild(inp);
+
+  const sug = document.createElement("div");
+  sug.style.cssText="position:absolute;top:100%;left:0;width:100%;border:1px solid #ccc;background:#fff;z-index:1000;max-height:200px;overflow-y:auto;font-family:sans-serif;";
+  container.appendChild(sug);
+
+  function clear(){sug.innerHTML="";currentItems=[];activeIndex=-1;}
+  function setActive(i){
+    sug.querySelectorAll("div").forEach((el,j)=>el.style.background=j===i?"#eee":"#fff");
+    activeIndex=i;
+  }
+  function selectFeature(f){
+    inp.value=f.properties.formatted;
+    clear();
+    const lat=f.properties.lat, lon=f.properties.lon;
+    _deliveryCoords=[lon,lat];
+
+    //valide la livraison + récupère le temps réel
+    fetch(API+"/timetravel",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({destination:[lon,lat]})
+    })
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.success){
+        alert("Livraison impossible à cette adresse. Entrez une adresse valide.");
+        inp.value="";
+        _deliveryCoords=[];
+        return;
+      }
+      //d.duration est un tableau [minutes, secondes] ou [heures, minutes, secondes]
+      //on reconvertit en secondes pour le timer
+      const dur = d.duration;
+      if(dur.length===1) _deliverySeconds = dur[0];
+      else if(dur.length===2) _deliverySeconds = dur[0]*60+dur[1];
+      else _deliverySeconds = dur[0]*3600+dur[1]*60+dur[2];
+    })
+    .catch(()=>{
+      //Back indisponible : on laisse coords remplies, timer tombera en fallback aléatoire
+      console.warn("timetravel non disponible, fallback timer aléatoire");
+    });
+  }
+
+  function fetchSuggestions(val){
+    const key="377ccf1ef5fb4abda18ae2eb6e6723cf"; //même clé que main.js
+    fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(val)}&limit=5&filter=countrycode:fr&apiKey=${key}`)
+    .then(r=>r.json())
+    .then(d=>{
+      clear();
+      if(!d.features?.length) return;
+      currentItems=d.features;
+      d.features.forEach((f,i)=>{
+        const el=document.createElement("div");
+        el.textContent=f.properties.formatted;
+        el.style.cssText="padding:10px;cursor:pointer;border-bottom:1px solid #eee;";
+        el.addEventListener("mouseover",()=>setActive(i));
+        el.addEventListener("click",()=>selectFeature(f));
+        sug.appendChild(el);
+      });
+    }).catch(console.error);
+  }
+
+  inp.addEventListener("input",function(){
+    clearTimeout(debounce);
+    if(!this.value||this.value.length<3){clear();return;}
+    debounce=setTimeout(()=>fetchSuggestions(this.value),300);
+  });
+  inp.addEventListener("keydown",function(e){
+    if(!currentItems.length) return;
+    if(e.key==="ArrowDown"){e.preventDefault();setActive((activeIndex+1)%currentItems.length);}
+    if(e.key==="ArrowUp"){e.preventDefault();setActive((activeIndex-1+currentItems.length)%currentItems.length);}
+    if(e.key==="Enter"){e.preventDefault();if(activeIndex>=0)selectFeature(currentItems[activeIndex]);}
+  });
+  document.addEventListener("click",e=>{if(!container.contains(e.target))clear();});
+}
+
+function syncPizzasFromBackend(){
+  fetch(API+"/get_pizzas")
+  .then(r=>r.json())
+  .then(rows=>{
+    //rows = [[pizza_id, name, preparation_time, price]]
+    rows.forEach(row=>{
+      const dbId=row[0], dbName=row[1], dbPrice=parseFloat(row[3]);
+      const localId="p"+dbId;
+      const item=DATA.pizzas.find(p=>p.id===localId);
+      if(item){
+        item.name  = dbName;
+        item.price = dbPrice;
+      } else {
+        //pizza présente en DB mais pas encore dans DATA → on l'ajoute
+        DATA.pizzas.push({
+          id: localId, name: dbName,
+          desc: "", price: dbPrice,
+          cat: "classique", img: ""
+        });
+      }
+    });
+    //re-render menu après sync
+    renderMenu(document.querySelector(".tab.active")?.dataset.cat||"all");
+  })
+  .catch(()=>{
+    console.warn("Backend non disponible — pizzas affichées depuis les données locales.");
+  });
 }
 
 //function for menu page
@@ -277,4 +494,8 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
   document.getElementById("overlay").addEventListener("click",e=>{if(e.target===document.getElementById("overlay"))closeModal()});
   setTimeout(()=>{document.querySelectorAll(".perf-bar").forEach(b=>{b.style.width=b.dataset.val+"%"})},700);
+
+  // Connexion backend
+  syncPizzasFromBackend();
+  initAddressAutocomplete();
 });
