@@ -452,26 +452,7 @@ function filterMenu(cat,btn){
 }
 
 //for speak chatbot
-const BOT=[
-  {k:["végétar","vegan"],r:()=>"Je vous recommande la Capricciosa Verde (12,90€) ou la Veggie Hack (12,50€). Généreuses et sans viande !"},
-  {k:["pepperoni","épicé","pimenté"],r:()=>"Notre AI Pepperoni — double pepperoni et jalapeños — est notre bestseller à 14,90€."},
-  {k:["fromage"],r:()=>"Le 4 Fromages 2.0 (gorgonzola, chèvre, raclette, emmental) à 13,90€ est incontournable."},
-  {k:["livraison","arrive","quand","combien de temps","délai"],r:()=>{const m=Math.floor(Math.random()*11)+15;return`En ce moment le délai estimé est de <strong>${m} minutes</strong>. Passez commande, vos pizzas arrivent vite !`}},
-  {k:["prix","cher","coût","combien"],r:()=>"Nos pizzas vont de 10,90€ à 16,50€. Desserts : 5€ à 6,50€. Boissons : 2,50€ à 4,90€."},
-  {k:["spéciale","speciale","original"],r:()=>"Nos spéciales : AI Pepperoni, Pizza Dark Mode à l'encre de seiche, et Open Source aux 4 fromages et truffe."},
-  {k:["dessert"],r:()=>"Tiramisu maison 5,50€, Fondant choco 6,50€, Panna cotta 5€, Brownie noix-caramel 5,90€."},
-  {k:["boisson","boire","coca","jus","eau"],r:()=>"Coca-Cola, eau pétillante, jus d'orange pressé, limonade citron, café espresso et bière artisanale. De 2,50€ à 4,90€."},
-  {k:["commander","commande"],r:()=>"Cliquez sur 'Commander maintenant' ou sur n'importe quelle pizza. Vous pourrez choisir pizza, dessert et boisson !"},
-  {k:["allergi","gluten","sans"],r:()=>"Mentionnez vos allergies dans votre commande ou appelez-nous au 01 23 45 67 89."},
-  {k:["ouvert","horaire","heure"],r:()=>"Ouvert tous les jours 11h30-14h30 et 18h-23h. Le chatbot est là 24h/24 !"},
-  {k:["merci","super","top","parfait"],r:()=>"Avec plaisir ! Bonne dégustation chez PizzaTech !"},
-  {k:["bonjour","salut","hello","bonsoir"],r:()=>"Bonjour ! Je suis PizzaBot. Demandez-moi notre carte, les prix, le délai de livraison, ou passez directement commande !"},
-];
-function getBotReply(msg){
-  const m=msg.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  for(const e of BOT){if(e.k.some(k=>m.includes(k.normalize("NFD").replace(/[\u0300-\u036f]/g,""))))return e.r()}
-  return"Je n'ai pas bien compris. Essayez : notre carte, les prix, le délai de livraison, ou dites ce que vous aimez manger !";
-}
+
 function addMsg(txt,who){
   const log=document.getElementById("chatLog");
   const d=document.createElement("div");
@@ -488,7 +469,22 @@ function sendChat(){
   td.className="msg";
   td.innerHTML=`<div class="av-sm av-bot">PT</div><div class="bubble bubble-bot typing"><span></span><span></span><span></span></div>`;
   log.appendChild(td);log.scrollTop=log.scrollHeight;
-  setTimeout(()=>{td.remove();addMsg(getBotReply(msg),"bot")},900);
+  fetch("http://127.0.0.1:5000/chatbot", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ message: msg })
+  })
+  .then(res => res.json())
+  .then(data => {
+    td.remove();
+    addMsg(data.reply, "bot");
+  })
+  .catch(err => {
+    td.remove();
+    addMsg("Erreur serveur 😢", "bot");
+  });
 }
 
 //init
