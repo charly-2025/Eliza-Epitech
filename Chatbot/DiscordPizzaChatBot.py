@@ -27,9 +27,9 @@ user_states = {
 }
 
 INTRO_MESSAGE = (
-    "Bonjour, je suis **PizzaFlow**\n"
+    "Bonjour, je suis PizzaTech\n"
     "Je peux vous informer sur le statut, la préparation et la livraison de votre commande.\n"
-    "Donnez-moi votre **numéro de commande** pour commencer."
+    "Donnez-moi votre numéro de commande pour commencer."
 )
 
 
