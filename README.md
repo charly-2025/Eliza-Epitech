@@ -2,7 +2,6 @@
 
 This project serves as an introduction to chatbot development. The goal of this project is to design a chatbot with a business focus one that serves a practical purpose within a company and integrates into the value chain. For our project, we chose to design a chatbot for a pizza restaurant that offers delivery. Today, in many pizzerias, customers call back after placing an order to check on its status and find out how long it will take to be delivered. Our chatbot automates this process by allowing customers to enter their order number and see the remaining delivery time.
 
-Translated with DeepL.com (free version)
 --- 
 ## Installation and Local Run
 
@@ -22,7 +21,7 @@ The backend and chatbot relies on the following environment variables:
 
 ```
 PASSWORD = < your MYSQL secret password >
-GRAPH_HOPPER = < your GRAP HOPPER api >
+GRAPH_HOPPER = < your GRAP HOPPER api key>
 ```
 
 ### Running the Project
