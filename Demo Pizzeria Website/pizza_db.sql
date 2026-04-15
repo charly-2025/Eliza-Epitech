@@ -32,3 +32,13 @@ CREATE TABLE IF NOT EXISTS pizzas (
     price DECIMAL(6,2) NOT NULL
 );
 
+INSERT INTO pizzas (pizza_id, name, preparation_time, price) VALUES
+(1, 'Margherita Tech', 10, 10.90),
+(2, '4 Fromages 2.0', 12, 13.90),
+(3, 'Reine du Code', 11, 13.50),
+(4, 'Capricciosa Verde', 11, 12.90),
+(5, 'Veggie Hack', 10, 12.50),
+(6, 'Primavera Bot', 9, 11.90),
+(7, 'AI Pepperoni', 13, 14.90),
+(8, 'Pizza Dark Mode', 14, 15.90),
+(9, 'Open Source', 15, 16.50);

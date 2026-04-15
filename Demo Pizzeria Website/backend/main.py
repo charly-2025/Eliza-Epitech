@@ -8,7 +8,12 @@ from dotenv import load_dotenv
 import argparse
 from datetime import datetime, timedelta
 from routingpy import exceptions
+import smtplib
+from email.mime.text import MIMEText
+import sys
 
+sys.path.append("..")
+from Chatbot.pizzaTechChatBot import chatbot
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--back', action="store_true", help='launch api')
@@ -24,6 +29,36 @@ grap_hopper_api_key = os.getenv("GRAPH_HOPPER")
 gh = Graphhopper(api_key= grap_hopper_api_key)
 
 Epitech = [-1.6973159, 48.1250328]
+
+
+def send_mail(destinataire, numero_commande):
+    expediteur = "pizza.tech35@gmail.com"
+    mot_de_passe = "oqyh whjd zggz tvik"
+
+    sujet = "Confirmation de commande"
+    message = f"""
+        Bonjour,
+
+        Votre commande a bien été effectué.
+
+        Numéro de commande : #{numero_commande}
+
+        Merci pour votre achat
+
+        Ceci est un mail automatique
+        """
+
+    msg = MIMEText(message)
+    msg["Subject"] = sujet
+    msg["From"] = expediteur
+    msg["To"] = destinataire
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as serveur:
+        serveur.login(expediteur, mot_de_passe)
+        serveur.send_message(msg)
+
+    print("Email send")
+
 
 def format_travel_time_str(travel_time):
     duration = str(travel_time) + " seconds"
@@ -163,23 +198,10 @@ def newCommand():
     phone = data["phone"]
 
 
-    delivery_time_from_frontend = data.get("delivery_time_seconds", None)
-
-    print(f"[newCommand] coords reçus: {coords}")
-    print(f"[newCommand] delivery_time_from_frontend: {delivery_time_from_frontend}")
-
     con,cursor = create_link_db("pizza_db",os.getenv("PASSWORD"))
 
     preparation_time = get_pizzas_preparation(pizzas,cursor)
-
-    if delivery_time_from_frontend and delivery_time_from_frontend > 0:
-        delivery_time = int(delivery_time_from_frontend)
-    else:
-        #recalcule seulement si les coords sont valides
-        if not coords or len(coords) < 2 or (coords[0] == 0 and coords[1] == 0):
-            con.close()
-            return jsonify({"result": "error", "message": "Coordonnées invalides"}), 400
-        delivery_time = get_delivery_time(Epitech, coords) + 120
+    delivery_time = get_delivery_time(Epitech,coords)+120
 
     now = datetime.now()
     date_finish_preparation = now + timedelta(minutes=preparation_time)
@@ -197,6 +219,9 @@ def newCommand():
     con.commit()
     con.close()
     cursor.close()
+
+
+    send_mail(email,order_id)
 
     return jsonify({
         "result" : "succes"
@@ -224,9 +249,21 @@ if args.pizza :
 
     print("New pizza added !")
 
+state = {
+    "order_id": None,
+    "last_intent": None
+}
+
+
+@app.route("/chatbot", methods=["POST"])
+def chat():
+    data = request.get_json()
+    message = data.get("message")
+
+    reply = chatbot(message, state)
+
+    return jsonify({"reply": reply})
+
 if __name__ == "__main__" and args.back:
     app.run(debug=True)
-
-
-
 
