@@ -5,20 +5,23 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 PASSWORD = os.getenv("PASSWORD")
 
+# Conversation state to keep track of the current order and last detected intent
 state = {
     "order_id": None,
     "last_intent": None
 }
 
 
-def normalize(text):
+def normalize(text): # Normalize text by converting to lowercase and removing accents
     text = text.lower()
     text = unicodedata.normalize('NFD', text)
     return ''.join(c for c in text if unicodedata.category(c) != 'Mn')
 
+# Intent patterns to detect user queries
 INTENTS = {
     "order_status": [
         r"status",
@@ -49,12 +52,12 @@ INTENTS = {
     ]
 }
 
-
+# Function to detect order ID from the user's message
 def detect_order_id(message):
     match = re.search(r"\b\d{1,10}\b", message)
     return match.group(0) if match else None
 
-
+# Function to detect the user's intent based on the message content
 def detect_intent(message):
     message = normalize(message)
 
@@ -65,7 +68,7 @@ def detect_intent(message):
 
     return None
 
-
+# Function to retrieve order details from the database based on the order ID
 def get_order(order_id):
 
     conn = mysql.connector.connect(
@@ -101,7 +104,7 @@ def get_order(order_id):
         "date_delivery": order[2]
     }
 
-
+# Function to calculate the remaining seconds until a target datetime
 def get_seconds_remaining(target_datetime):
     if target_datetime is None:
         return None
@@ -111,7 +114,7 @@ def get_seconds_remaining(target_datetime):
 
     return max(seconds, 0)
 
-
+# Function to format seconds into a day, hour, minute, second format
 def format_time(seconds):
     hours, rem = divmod(seconds, 3600)
     minutes, seconds = divmod(rem, 60)
@@ -129,7 +132,7 @@ def format_time(seconds):
 
     return " ".join(parts)
 
-
+# Function to determine the remaining time for preparation or delivery based on the order status and user intent
 def get_time_remaining(order, intent):
 
     prep = get_seconds_remaining(order["date_finish_preparation"])
@@ -149,6 +152,7 @@ def get_time_remaining(order, intent):
 
     return {"stage": "unknown", "seconds": None}
 
+# Function to update the statuses of all orders in the database based on the current time and their preparation/delivery times
 def update_statuses():
 
     try:
@@ -173,6 +177,7 @@ def update_statuses():
     except mysql.connector.Error as e:
         print(f"Erreur update_statuses : {e}")
 
+# Main chabot logic to process user messages
 def chatbot(message, state):
     update_statuses()
 

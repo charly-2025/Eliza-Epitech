@@ -8,7 +8,7 @@ load_dotenv("../.env")
 sys.path.append("../")
 from pizzaTechChatBot import chatbot, update_statuses
 
-
+# Load environment variables
 TOKEN = os.getenv("DISCORD_TOKEN")
 PASSWORD = os.getenv("PASSWORD")
 DB_CONFIG = {
@@ -18,13 +18,13 @@ DB_CONFIG = {
     "database": "pizza_db"
 }
 
+# Discord bot creation with message content intent enabled
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-user_states = {
-
-}
+# Dictionary to store user states for each user
+user_states = {}
 
 INTRO_MESSAGE = (
     "Bonjour, je suis PizzaTech\n"
@@ -33,13 +33,16 @@ INTRO_MESSAGE = (
 )
 
 
+# Event handler for when the bot is ready
 @client.event
 async def on_ready():
     print(f"Connected as {client.user}")
 
-
+# Event handler for incoming messages
 @client.event
 async def on_message(message):
+
+    # Ignore messages sent by the bot itself
     if message.author == client.user:
         return
 
@@ -47,18 +50,14 @@ async def on_message(message):
 
     update_statuses()
 
+    # If the user is new, initialize their state and send the introduction message
     if user_id not in user_states:
         user_states[user_id] = {"order_id": None, "last_intent": None}
         await message.channel.send(INTRO_MESSAGE)
         return
 
+    # Process the user's message through the chatbot function and send the response
     response = chatbot(message.content, user_states[user_id])
     await message.channel.send(response)
 
 client.run(TOKEN)
-
-# proposer a la carte
-
-# les allergènes 
-
-# commande
