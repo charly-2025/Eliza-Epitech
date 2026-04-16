@@ -8,15 +8,6 @@ function toggleChat() {
   chatContainer.classList.toggle('show');
 }
 
-
-const botResponses = {
-  "livraison": "your order is being delivered, in 5 minutes it will be ready!",
-  "hello": "Hi there! How can I help you today?",
-  "how are you": "I'm just a bot, but I'm functioning as expected!",
-  "bye": "Goodbye! Have a great day!",
-  "default": "I'm sorry, I didn't understand that. Can you try rephrasing?"
-};
-
 function addMessage(text, sender) {
   const messageDiv = document.createElement('div');
   messageDiv.classList.add('message', sender);
@@ -28,16 +19,25 @@ function addMessage(text, sender) {
 function handleUserInput() {
   const userText = userInput.value.trim();
   if (!userText) return;
-
-
+  
   addMessage(userText, 'user');
   userInput.value = '';
 
-  setTimeout(() => {
-    const response = botResponses[userText.toLowerCase()] || botResponses['default'];
-    addMessage(response, 'bot');
-  }, 500);
-}
+  fetch("http://127.0.0.1:5000/chatbot", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ message: userText })
+  })
+  .then(res => res.json())
+  .then(data => {
+    addMessage(data.reply, "bot");
+  })
+  .catch(err => {
+    addMessage("Erreur serveur", "bot");
+  });
+  }
 
 
 sendBtn.addEventListener('click', handleUserInput);
