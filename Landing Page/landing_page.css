@@ -319,7 +319,7 @@ body {
   font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.4);
 }
-
+/* reponsive */
 @media (max-width: 768px) {
   .nav {
     padding: 12px 20px;

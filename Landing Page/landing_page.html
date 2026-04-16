@@ -6,10 +6,10 @@
 <title>PizzaTech</title>
 <link rel="stylesheet" href="landing_page.css"/>
 <link rel="stylesheet" href="chatbot.css"/>
-
+<!--This line loads the Ionicons-->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
+<!--This one only loads the Poppins font from Google Fonts, optimizing the connection-->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,6 +22,7 @@
         <div class="logo"><span>Pizza<strong>Tech</strong></span></div>
         <div class="menu">
             <ul>
+                <!--This is icon and name in the togle nav bar-->
                 <li class="link" data-target="home">
                     <span class="link-icon"><ion-icon name="home-outline"></ion-icon></span>
                     <span class="link-title">Home</span>
@@ -41,11 +42,11 @@
             </ul>
         </div>
     </nav>
-
+<!--This a video who play in background-->
     <video autoplay muted loop playsinline id="bgVideo">
         <source src="pepperoni1.mp4" type="video/mp4">
     </video>
-
+<!--Create section for separate each part and i add a id for link the icon nav bar with section-->
     <section id="home" class="page-section">
         <h1>Bienvenue chez PizzaTech</h1>
         <p>Les meilleur pizza de la Tech</p>
@@ -54,6 +55,7 @@
     <section id="Chatbot" class="page-section">
         <h1>Notre Chatbot</h1>
         <p>Découvrez la démo</p>
+        <!--Create a box for set a video-->
             <div class="video-container">
                 <iframe
                     src="Screencast from 2026-04-15 14-14-36.webm"
@@ -131,6 +133,8 @@
         </div>
     </footer>
     <script src="landing_page.js"></script>
+    <!--This script adds a click on each '.link' 
+    element to smoothly scroll down the page to the corresponding section defined by its 'data-target'attribute-->
     <script>
         document.querySelectorAll('.link').forEach(link => {
             link.addEventListener('click', function () {

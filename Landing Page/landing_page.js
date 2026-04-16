@@ -8,7 +8,7 @@ function toggleChat() {
   chatContainer.classList.toggle('show');
 }
 
-
+//This is differentes response of 
 const botResponses = {
   "livraison": "your order is being delivered, in 5 minutes it will be ready!",
   "hello": "Hi there! How can I help you today?",
