@@ -42,7 +42,7 @@ and install the bot on your server
 For the landing page :
 ```
 cd landing_page
-firefox landing_page.html
+./startup.sh
 ```
 ---
 ### Justification of Technical Choices
