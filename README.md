@@ -117,7 +117,3 @@ USEFUL <scope>:
   - Figma
 
 ```
-
----
-
-More of my work on my [portfolio](https://charly-2025.github.io/myPortfolio/).
