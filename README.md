@@ -1,10 +1,10 @@
-# PizzaTech: a chatbot for pizzerias
+# Eliza: a chatbot for pizzerias
 
 > Built at **Epitech Rennes** · B-AIA-210 · Artificial Intelligence · April 2026
 
 ## Overview
 
-A chatbot built around a real business need: pizzeria customers often call back to ask where their order is. **PizzaTech** automates that answer: customers enter their order number and get the order status and the remaining delivery time, computed with the GraphHopper API.
+A chatbot built around a real business need: pizzeria customers often call back to ask where their order is. **Eliza** (branded PizzaTech) automates that answer: customers enter their order number and get the order status and the remaining delivery time, computed with the GraphHopper API.
 
 ## Features
 
