@@ -24,11 +24,6 @@ Required environment variables: `PASSWORD` (MySQL password) and `GRAPH_HOPPER` (
 
 No secret is committed: create your own local `.env` file.
 
-## Team
-
-- Charly Richard-Fromont
-- Noa Loussouarn
-
 ---
 
 ## Technical documentation
